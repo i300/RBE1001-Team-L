@@ -2,9 +2,9 @@
 
 /* constructor
  *
- * leftMotorPin - pwm pin for left motor
- * rightMotorPin - pwm pin for right motor
- * inversion - which side of the robot is inverted
+ * leftMotorPin - PWM pin for left motor
+ * rightMotorPin - PWM pin for right motor
+ * inversion - Which side of the robot is inverted
  */
 DriveTrain::DriveTrain(int leftMotorPin, int rightMotorPin, DriveTrainInvertedSide inversion) {
   leftMotor.attach(leftMotorPin, 1000, 2000);
@@ -13,9 +13,9 @@ DriveTrain::DriveTrain(int leftMotorPin, int rightMotorPin, DriveTrainInvertedSi
   invertedSide = inversion;
 }
 
-/* speedToMotorValue - converts a speed into a motor value
+/* speedToMotorValue - Converts a speed into a motor value
  *
- * speed - speed (-1 to 1)
+ * speed - Speed (-1 to 1)
  */
 int DriveTrain::speedToMotorValue(float speed) {
   int realSpeed = speed * 100;
@@ -24,8 +24,8 @@ int DriveTrain::speedToMotorValue(float speed) {
 
 /* writeToMotors
  *
- * left - left motor value
- * right - right motor value
+ * left - Left motor value
+ * right - Light motor value
  */
 void DriveTrain::writeToMotors(int left, int right) {
   if (invertedSide == INVERTED_LEFT) {
@@ -34,15 +34,15 @@ void DriveTrain::writeToMotors(int left, int right) {
   }
 
   if (invertedSide == INVERTED_RIGHT) {
-    leftMotor.write(MOTOR_MAX_VALUE - left);
-    rightMotor.write(right);
+    leftMotor.write(left);
+    rightMotor.write(MOTOR_MAX_VALUE - right);
   }
 }
 
-/* arcadeDrive - drives robot based on a forward speed and rotation value
+/* arcadeDrive - Drives robot based on a forward speed and rotation value
  *
- * speed - speed robot will drive at
- * rotation - value from -1 (left) to 1 (right)
+ * speed - Speed robot will drive at
+ * rotation - Value from -1 (left) to 1 (right)
  */
 void DriveTrain::arcadeDrive(float speed, float rotation) {
   // constrain speed and roation to intended values (-1 to 1)
@@ -79,10 +79,10 @@ void DriveTrain::arcadeDrive(float speed, float rotation) {
   writeToMotors(leftMotorValue, rightMotorValue);
 }
 
-/* tankDrive - drive robot based on left values and right speeds
+/* tankDrive - Drive robot based on left values and right speeds
  *
- * left - left speed
- * right - right speed
+ * left - Left speed
+ * right - Right speed
  */
 void DriveTrain::tankDrive(float left, float right) {
   // constrain speeds to intended values (-1 to 1)

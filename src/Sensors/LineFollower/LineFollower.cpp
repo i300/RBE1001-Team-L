@@ -2,8 +2,8 @@
 
 /* constructor
  *
- * leftPin - digital pin for the left sensor
- * leftPin - digital pin for the right sensor
+ * leftPin - Digital pin for the left sensor
+ * leftPin - Digital pin for the right sensor
  */
 LineFollower::LineFollower(int8 leftPin, int8 rightPin) {
   leftSensorPin = leftPin;
@@ -13,9 +13,9 @@ LineFollower::LineFollower(int8 leftPin, int8 rightPin) {
   pinMode(rightSensorPin, INPUT);
 }
 
-/* readSensor - reads a value directly from a sensor
+/* readSensor - Reads a value directly from a sensor
  *
- * sensor - flag to choose what sensor to read from
+ * sensor - Flag to choose what sensor to read from
  */
 bool16 LineFollower::readSensor(int8 sensor) {
   if (sensor == LEFT_SENSOR) {
@@ -27,7 +27,7 @@ bool16 LineFollower::readSensor(int8 sensor) {
   }
 }
 
-/* read - reads from both sensors and returns a useful value
+/* read - Reads from both sensors and returns a useful value
  *
  */
 LineFollowerReading LineFollower::read() {
