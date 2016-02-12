@@ -7,36 +7,33 @@
  * inversion - Which side of the robot is inverted
  */
 DriveTrain::DriveTrain(int leftMotorPin, int rightMotorPin, DriveTrainInvertedSide inversion) {
-  leftMotor.attach(leftMotorPin, 1000, 2000);
-  rightMotor.attach(rightMotorPin, 1000, 2000);
+  leftMotor = new Motor(leftMotorPin);
+  rightMotor = new Motor(rightMotorPin);
 
-  invertedSide = inversion;
-}
+  switch (inversion) {
+    case INVERTED_LEFT:
+      leftMotor = new Motor(leftMotorPin, true);
+      rightMotor = new Motor(rightMotorPin, false);
+      break;
 
-/* speedToMotorValue - Converts a speed into a motor value
- *
- * speed - Speed (-1 to 1)
- */
-int DriveTrain::speedToMotorValue(float speed) {
-  int realSpeed = speed * 100;
-  return (int)map(realSpeed, -100, 100, MOTOR_MIN_VALUE, MOTOR_MAX_VALUE);
+    case INVERTED_RIGHT:
+      leftMotor = new Motor(leftMotorPin, false);
+      rightMotor = new Motor(rightMotorPin, true);
+      break;
+
+    default:
+      break;
+  }
 }
 
 /* writeToMotors
  *
- * left - Left motor value
- * right - Light motor value
+ * left - Left motor speed
+ * right - Light motor speed
  */
-void DriveTrain::writeToMotors(int left, int right) {
-  if (invertedSide == INVERTED_LEFT) {
-    leftMotor.write(MOTOR_MAX_VALUE - left);
-    rightMotor.write(right);
-  }
-
-  if (invertedSide == INVERTED_RIGHT) {
-    leftMotor.write(left);
-    rightMotor.write(MOTOR_MAX_VALUE - right);
-  }
+void DriveTrain::writeToMotors(float left, float right) {
+  leftMotor->write(left);
+  rightMotor->write(right);
 }
 
 /* arcadeDrive - Drives robot based on a forward speed and rotation value
@@ -71,12 +68,8 @@ void DriveTrain::arcadeDrive(float speed, float rotation) {
     }
   }
 
-  // map calculated speeds to motor values
-  float leftMotorValue = (float)speedToMotorValue(leftMotorSpeed);
-  float rightMotorValue = (float)speedToMotorValue(rightMotorSpeed);
-
   // drive robot
-  writeToMotors(leftMotorValue, rightMotorValue);
+  writeToMotors(leftMotorSpeed, rightMotorSpeed);
 }
 
 /* tankDrive - Drive robot based on left values and right speeds
@@ -89,6 +82,6 @@ void DriveTrain::tankDrive(float left, float right) {
   left = constrain(left, -1, 1);
   right = constrain(right, -1, 1);
 
-  // convert to motor values and write to motors
-  writeToMotors(speedToMotorValue(left), speedToMotorValue(right));
+  // write to motors
+  writeToMotors(left, right);
 }

@@ -36,9 +36,11 @@ void autonomous() {
   // drive right if the right sensor is triggered,
   // and drive straight if neither are triggered
   if (lineFollowStatus == DETECT_LEFT) {
-    driveTrain->arcadeDrive(5/8, -0.5);
+    driveTrain->arcadeDrive(5/8, -0.75);
+    delay(100);
   } else if (lineFollowStatus == DETECT_RIGHT) {
-    driveTrain->arcadeDrive(5/8, 0.5);
+    driveTrain->arcadeDrive(5/8, 0.75);
+    delay(100);
   } else if (lineFollowStatus == DETECT_NONE) {
     driveTrain->arcadeDrive(0.625, 0);
   }
@@ -69,7 +71,4 @@ void loop() {
 
     teleop();
   }
-
-  // Delay 20ms for dfw and servo safety
-  delay(20);
 }
