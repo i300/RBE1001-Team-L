@@ -4,11 +4,11 @@
 #ifndef LINEFOLLOWER_H
 #define LINEFOLLOWER_H
 
-enum LineFollowerReading { DETECT_LEFT, DETECT_RIGHT, DETECT_NONE };
+enum LineFollowerReading { DETECT_LEFT, DETECT_RIGHT, DETECT_BOTH, DETECT_NONE };
 
 class LineFollower {
   int8 leftSensorPin, rightSensorPin;
-  
+
   static const int8 LEFT_SENSOR = (1 << 0);
   static const int8 RIGHT_SENSOR = (1 << 1);
 

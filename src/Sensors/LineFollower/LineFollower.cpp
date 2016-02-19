@@ -29,13 +29,17 @@ bool16 LineFollower::readSensor(int8 sensor) {
 
 /* read - Reads from both sensors and returns a useful value
  *
+ * The sensors return 0 if they detect a line and
+ * 1 if they don't detect a line
  */
 LineFollowerReading LineFollower::read() {
-  bool16 leftSensor = readSensor(LEFT_SENSOR);
-  bool16 rightSensor = readSensor(RIGHT_SENSOR);
+  bool16 leftSensor = readSensor(LEFT_SENSOR) == 0;
+  bool16 rightSensor = readSensor(RIGHT_SENSOR) == 0;
 
-  if ((!leftSensor && !rightSensor) || (leftSensor && rightSensor)) {
+  if (!leftSensor && !rightSensor) {
     return DETECT_NONE;
+  } else if (leftSensor && rightSensor) {
+    return DETECT_BOTH;
   } else if (leftSensor) {
     return DETECT_LEFT;
   } else if (rightSensor) {
