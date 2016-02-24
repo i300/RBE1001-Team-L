@@ -38,7 +38,7 @@ void setup() {
   lineFollower = new LineFollower(PIN_SENSOR_LINEFOLLOWER_LEFT, PIN_SENSOR_LINEFOLLOWER_RIGHT);
 }
 
-void autonomous(uint16 timeRunning) {
+void autonomousFunction() {
   LineFollowerReading lineFollowStatus = lineFollower->read();
 
   // Drive left if the left sensor is triggered,
@@ -59,7 +59,7 @@ void autonomous(uint16 timeRunning) {
   }
 }
 
-void teleop() {
+void teleopFunction() {
   driveTrain->arcadeDrive(controller->getY(JS_LEFT), controller->getX(JS_RIGHT));
   arm->update();
 
@@ -84,26 +84,62 @@ void teleop() {
   }
 }
 
-void loop() {
-  uint16 currentTime = millis();
-
-  // Time between loops
-  uint16 dt = currentTime - lastLoopTime;
-  lastLoopTime = currentTime;
-
-  // Time robot running
-  uint16 timeRunning = currentTime - gameStartTime;
-
-  Serial.print("dt: "); Serial.println(dt);
-
-  // Run for 0 seconds in autonomous, then enter into teleop
-  if (!autoCompleted) {
-    autonomous(timeRunning);
-  } else {
+/* autonomous
+ *
+ * time - Time (in seconds) to run the loop
+ */
+void autonomous(volatile unsigned long time) {
+  // Wait to start autonomous loop until the start button is pressed
+  while (controller->getButton(BTN_START) == 1) {
+    Serial.println("waiting for start");
     controller->update();
-
-    teleop();
+    delay(20);
   }
 
-  delay(20);
+  unsigned long startTime = millis();
+  time = time * 1000;
+
+  // Loops until autonomous has been running for the assigned time, or the select button is pressed
+  while ((millis() - startTime <= time) && (controller->getButton(BTN_SELECT))) {
+    // Update controller
+    controller->update();
+
+    // Run autonomous code
+    autonomousFunction();
+
+    // Delay for DFW and servo safety
+    delay(20);
+  }
+}
+
+/* teleop
+ *
+ * time - Time (in seconds) to run the loop
+ */
+void teleop(unsigned long time) {
+  unsigned long startTime = millis();
+  time = time * 1000;
+
+  // Loops until teleop has been running for the assigned time
+  while (millis() - startTime <= time) {
+    // Update controller
+    controller->update();
+
+    // Run teleop code
+    teleopFunction();
+
+    // Delay for DFW and servo safety
+    delay(20);
+
+  }
+
+  // Exit program after teleop period is completed
+  exit(0);
+}
+
+
+void loop() {
+  autonomous(20); // Run autonomous for 20 seconds
+
+  teleop(180);  // Run teleop for 20 seconds
 }
