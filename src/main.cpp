@@ -5,7 +5,7 @@
 
 #include "Controller/Controller.hpp"
 #include "Subsystems/DriveTrain/DriveTrain.hpp"
-#include "Subsystems/Arm/Arm.hpp"
+#include "Subsystems/BowlGrabber/BowlGrabber.hpp"
 #include "Sensors/LineFollower/LineFollower.hpp"
 
 // Controller
@@ -13,12 +13,8 @@ Controller *controller;
 
 // Subsystems
 DriveTrain *driveTrain;
-Arm *arm;
+BowlGrabber *bowlGrabber;
 LineFollower *lineFollower;
-
-// Game variables
-uint16 lastLoopTime = 0;
-uint16 gameStartTime = 0;
 
 bool16 autoCompleted = false;
 
@@ -29,12 +25,14 @@ void setup() {
 
   delay(100);
 
+  pinMode(22, INPUT_PULLUP);
+
   // Initialize Controller
   controller = new Controller(PIN_LED_DEBUG);
 
   // Initialize Subsystems
   driveTrain = new DriveTrain(PIN_MOTOR_LEFT, PIN_MOTOR_RIGHT, INVERTED_RIGHT);
-  arm = new Arm(PIN_MOTOR_ARM);
+  bowlGrabber = new BowlGrabber(PIN_MOTOR_ARM);
   lineFollower = new LineFollower(PIN_SENSOR_LINEFOLLOWER_LEFT, PIN_SENSOR_LINEFOLLOWER_RIGHT);
 }
 
@@ -61,19 +59,22 @@ void autonomousFunction() {
 
 void teleopFunction() {
   driveTrain->arcadeDrive(controller->getY(JS_LEFT), controller->getX(JS_RIGHT));
-  arm->update();
+  bowlGrabber->update();
 
-  if (!arm->getPIDEnabled()) {
+  // if (digitalRead(22)) {
+  if (true) {
     if (controller->getButton(BTN_UP)) {
-      arm->up(0.5);
+      bowlGrabber->up(1.0);
     } else if (controller->getButton(BTN_DOWN)) {
-      arm->down(0.5);
+      bowlGrabber->down(1.0);
     } else {
-      arm->stop();
+      bowlGrabber->stop();
     }
+  } else {
+    bowlGrabber->stop();
   }
 
-  if (controller->getButton(BTN_TWO)) {
+  /*if (controller->getButton(BTN_TWO)) {
     arm->enablePID();
     arm->setAngle(arm->horizAngle);
   } else if (controller->getButton(BTN_ONE)) {
@@ -81,7 +82,7 @@ void teleopFunction() {
     arm->setAngle(arm->vertAngle);
   } else if (controller->getButton(BTN_THREE)) {
     arm->disablePID();
-  }
+  }*/
 }
 
 /* autonomous
@@ -121,7 +122,8 @@ void teleop(unsigned long time) {
   time = time * 1000;
 
   // Loops until teleop has been running for the assigned time
-  while (millis() - startTime <= time) {
+  //while (millis() - startTime <= time) {
+  while (true) {
     // Update controller
     controller->update();
 
@@ -139,7 +141,7 @@ void teleop(unsigned long time) {
 
 
 void loop() {
-  autonomous(20); // Run autonomous for 20 seconds
+  //autonomous(20); // Run autonomous for 20 seconds
 
   teleop(180);  // Run teleop for 20 seconds
 }

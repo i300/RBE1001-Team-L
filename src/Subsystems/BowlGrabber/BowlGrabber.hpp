@@ -3,11 +3,11 @@
 #include "../../Utilities.h"
 #include "../../Motor/Motor.hpp"
 
-#ifndef ARM_H
-#define ARM_H
+#ifndef BOWLGRABBER_H
+#define BOWLGRABBER_H
 
-class Arm {
-  Motor *armMotor;
+class BowlGrabber {
+  Motor *motor;
 
   const float kP = 0.0075;
 
@@ -22,7 +22,7 @@ protected:
   void writeToMotor(float speed);
 
 public:
-  Arm(int armMotorPin);
+  BowlGrabber(int motorPin);
 
   const int16 horizAngle = 300;
   const int16 vertAngle = 725;

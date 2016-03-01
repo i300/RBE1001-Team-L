@@ -1,18 +1,18 @@
-#include "Arm.hpp"
+#include "BowlGrabber.hpp"
+
 /* constructor:
 
- * armMotorPin - PWM for arm motor
+ * motorPin - PWM for arm motor
  */
-Arm::Arm(int armMotorPin) {
-  armMotor = new Motor(armMotorPin, false);
+BowlGrabber::BowlGrabber(int motorPin) {
+  motor = new Motor(motorPin, false);
 }
 
-/* update - Updates the arm's sensors and executes PID control
+/* update - Updates the Bowl Grabber's sensors and executes PID control
  *
  */
-void Arm::update() {
+void BowlGrabber::update() {
   currentAngle = analogRead(PIN_SENSOR_ARM_POT);
-  Serial.println(currentAngle);
 
   if (pidEnabled) {
     float error = setpointAngle - currentAngle;
@@ -25,84 +25,84 @@ void Arm::update() {
 
 }
 
-void Arm::writeToMotor(float speed) {
+void BowlGrabber::writeToMotor(float speed) {
   if ((currentAngle > maxAngle) && (speed < 0)) {
-    armMotor->write(speed);
+    motor->write(speed);
   } else if ((currentAngle < minAngle) && (speed > 0)) {
-    armMotor->write(speed);
+    motor->write(speed);
   } else if ((currentAngle < maxAngle) && (currentAngle > minAngle)) {
-    armMotor->write(speed);
+    motor->write(speed);
   } else {
-    armMotor->write(0);
+    motor->write(0);
   }
 }
 
 /* enablePID - Enables PID control
  *
  */
-void Arm::enablePID() {
+void BowlGrabber::enablePID() {
   pidEnabled = true;
 }
 
 /* disablePID - Disables PID control
  *
  */
-void Arm::disablePID() {
+void BowlGrabber::disablePID() {
   pidEnabled = false;
 }
 
-bool16 Arm::getPIDEnabled() {
+bool16 BowlGrabber::getPIDEnabled() {
   return pidEnabled;
 }
 
-/* setAngle - Sets the Arm's angle using PID
+/* setAngle - Sets the Bowl Grabber's angle using PID
  *
  */
-void Arm::setAngle(float angle) {
+void BowlGrabber::setAngle(float angle) {
   setpointAngle = angle;
 }
 
-bool16 Arm::isAtSetpoint() {
+bool16 BowlGrabber::isAtSetpoint() {
   bool16 atSetpoint = (currentAngle < (setpointAngle * 1.2)) && (currentAngle > (setpointAngle * 0.8));
   Serial.println(atSetpoint);
   return atSetpoint;
 }
 
-/* up
+/* up - Moves the bowl grabber up
  *
  * speed - the speed the motor moves up
  */
-void Arm::up(float speed){
+void BowlGrabber::up(float speed){
   //constrains the speed to the intended speed (0, 1)
   speed = constrain(speed, 0, 1);
   //sets the motor to the speed desired
   writeToMotor(speed);
 }
 
-/* down
+/* down - Moves the bowl grabber down
  *
  * speed - the speed the motor moves down
  */
-void Arm::down(float speed){
+void BowlGrabber::down(float speed){
   //constrains the speed to the intended speed (0, 1)
   speed = constrain(speed, 0, 1);
   //sets the motor to the speed desired
   writeToMotor(-speed);
 }
 
-void Arm::lower() {
+void BowlGrabber::lower() {
   enablePID();
   setAngle(horizAngle);
 }
 
-void Arm::raise() {
+void BowlGrabber::raise() {
   enablePID();
   setAngle(vertAngle);
 }
 
-/* stop
+/* stop - Stops the motor
  *
  */
-void Arm::stop(){
-  armMotor->write(0);
+void BowlGrabber::stop(){
+  motor->write(0);
 }
