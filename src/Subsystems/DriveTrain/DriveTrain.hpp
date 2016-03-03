@@ -18,6 +18,7 @@ public:
   DriveTrain(int leftMotorPin, int rightMotorPin, DriveTrainInvertedSide inversion);
   void arcadeDrive(float speed, float rotation);
   void tankDrive(float left, float right);
+  void stop();
 };
 
 #endif

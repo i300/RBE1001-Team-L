@@ -6,7 +6,9 @@
 #include "Controller/Controller.hpp"
 #include "Subsystems/DriveTrain/DriveTrain.hpp"
 #include "Subsystems/BowlGrabber/BowlGrabber.hpp"
+#include "Subsystems/Loader/Loader.hpp"
 #include "Sensors/LineFollower/LineFollower.hpp"
+#include "Sensors/Rangefinder/Rangefinder.hpp"
 
 // Controller
 Controller *controller;
@@ -14,7 +16,11 @@ Controller *controller;
 // Subsystems
 DriveTrain *driveTrain;
 BowlGrabber *bowlGrabber;
+Loader *loader;
+
+// Sensors
 LineFollower *lineFollower;
+Rangefinder *rangefinder;
 
 bool16 autoCompleted = false;
 
@@ -32,8 +38,12 @@ void setup() {
 
   // Initialize Subsystems
   driveTrain = new DriveTrain(PIN_MOTOR_LEFT, PIN_MOTOR_RIGHT, INVERTED_RIGHT);
-  bowlGrabber = new BowlGrabber(PIN_MOTOR_ARM);
+  bowlGrabber = new BowlGrabber(PIN_MOTOR_BOWLGRABBER, PIN_SERVO_GRABBER);
+  loader = new Loader(PIN_MOTOR_FOAMLOADER);
+
+  // Initialize Sensors
   lineFollower = new LineFollower(PIN_SENSOR_LINEFOLLOWER_LEFT, PIN_SENSOR_LINEFOLLOWER_RIGHT);
+  rangefinder = new Rangefinder(PIN_SENSOR_RANGEFINDER);
 }
 
 void autonomousFunction() {
@@ -61,8 +71,7 @@ void teleopFunction() {
   driveTrain->arcadeDrive(controller->getY(JS_LEFT), controller->getX(JS_RIGHT));
   bowlGrabber->update();
 
-  // if (digitalRead(22)) {
-  if (true) {
+  if (!bowlGrabber->getPIDEnabled()) {
     if (controller->getButton(BTN_UP)) {
       bowlGrabber->up(1.0);
     } else if (controller->getButton(BTN_DOWN)) {
@@ -70,19 +79,45 @@ void teleopFunction() {
     } else {
       bowlGrabber->stop();
     }
-  } else {
-    bowlGrabber->stop();
   }
 
-  /*if (controller->getButton(BTN_TWO)) {
-    arm->enablePID();
-    arm->setAngle(arm->horizAngle);
-  } else if (controller->getButton(BTN_ONE)) {
-    arm->enablePID();
-    arm->setAngle(arm->vertAngle);
+  if (controller->getButton(BTN_L1)) {
+    bowlGrabber->openGrabber();
+  } else if (controller->getButton(BTN_R1)) {
+    bowlGrabber->closeGrabber();
+  }
+
+  // Load sequence
+  if (controller->getButton(BTN_FOUR)) {
+    driveTrain->stop();
+
+    while (digitalRead(PIN_SENSOR_LOADER_LIMIT) != 1) {
+      loader->load();
+
+      delay(20);
+    }
+
+    bowlGrabber->disablePID();
+    loader->stop();
+
+    delay(1000);
+
+    loader->load();
+
+    delay(2000);
+  } else if (controller->getButton(BTN_R2)){
+    loader->load();
+  } else {
+    loader->stop();
+  }
+
+  if (controller->getButton(BTN_ONE)) {
+    bowlGrabber->raise();
+  } else if (controller->getButton(BTN_TWO)) {
+    bowlGrabber->disablePID();
   } else if (controller->getButton(BTN_THREE)) {
-    arm->disablePID();
-  }*/
+    bowlGrabber->lower();
+  }
 }
 
 /* autonomous

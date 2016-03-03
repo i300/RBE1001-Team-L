@@ -85,3 +85,10 @@ void DriveTrain::tankDrive(float left, float right) {
   // write to motors
   writeToMotors(left, right);
 }
+
+/* stop - Sends zero to the drive motors
+ *
+ */
+void DriveTrain::stop() {
+  writeToMotors(0, 0);
+}
