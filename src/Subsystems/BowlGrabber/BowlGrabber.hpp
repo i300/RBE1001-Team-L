@@ -16,7 +16,7 @@ class BowlGrabber {
   const int16 topAngle = 830;
   const int16 bottomAngle = 950;
 
-  const int8 grabberOpenAngle = 100;
+  const int8 grabberOpenAngle = 90;
   const int8 grabberClosedAngle = 180;
 
   bool16 pidEnabled = false;

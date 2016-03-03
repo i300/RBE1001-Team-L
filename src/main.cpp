@@ -22,16 +22,24 @@ Loader *loader;
 LineFollower *lineFollower;
 Rangefinder *rangefinder;
 
-bool16 autoCompleted = false;
+// State
+typedef enum  {
+  DRIVE_FORWARD,
+  LOAD_FOAM,
+  FIND_LINE,
+  LINE_FOLLOW,
+  PICKUP_BOWL,
+  STOP
+} AutonomousState;
 
-const float autoDriveSpeed = 0.8;
+AutonomousState state = DRIVE_FORWARD;
 
 void setup() {
   Serial.begin(9600);
 
   delay(100);
 
-  pinMode(22, INPUT_PULLUP);
+  pinMode(PIN_SENSOR_LOADER_LIMIT, INPUT_PULLUP);
 
   // Initialize Controller
   controller = new Controller(PIN_LED_DEBUG);
@@ -39,32 +47,99 @@ void setup() {
   // Initialize Subsystems
   driveTrain = new DriveTrain(PIN_MOTOR_LEFT, PIN_MOTOR_RIGHT, INVERTED_RIGHT);
   bowlGrabber = new BowlGrabber(PIN_MOTOR_BOWLGRABBER, PIN_SERVO_GRABBER);
-  loader = new Loader(PIN_MOTOR_FOAMLOADER);
+  loader = new Loader(PIN_MOTOR_FOAMLOADER, PIN_SENSOR_LOADER_LIMIT);
 
   // Initialize Sensors
   lineFollower = new LineFollower(PIN_SENSOR_LINEFOLLOWER_LEFT, PIN_SENSOR_LINEFOLLOWER_RIGHT);
   rangefinder = new Rangefinder(PIN_SENSOR_RANGEFINDER);
 }
 
-void autonomousFunction() {
+void autonomousFunction(unsigned long startTime, volatile unsigned long beginTime) {
   LineFollowerReading lineFollowStatus = lineFollower->read();
+  bool16 foamLoaded = loader->isFoamLoaded();
+  int16 currentDistance = rangefinder->read();
 
+  Serial.println(currentDistance);
+
+  bowlGrabber->update();
+
+  if (state == DRIVE_FORWARD) {
+    // Lower the Bowl Grabber and begin driving forward;
+    bowlGrabber->lower();
+    driveTrain->arcadeDrive(1, 0);
+
+    // Drive forward until the sensor detects very close objects
+    if (currentDistance <= 8) {
+      driveTrain->stop();
+
+      // If a foam isn't loaded, load a form. Otherwise, grab the bowl.
+      if (!foamLoaded) {
+        state = LOAD_FOAM;
+      } else {
+        state = PICKUP_BOWL;
+      }
+    }
+  } else if (state == LOAD_FOAM) {
+    // Begin loading the foam
+    driveTrain->stop();
+    loader->load();
+
+    bowlGrabber->raise();
+    bowlGrabber->update();
+    while (!bowlGrabber->isAtSetpoint()) {
+      bowlGrabber->update();
+    }
+
+    // Drive forward slightely, then stop driving
+    driveTrain->arcadeDrive(1, 0);
+    delay(750);
+    driveTrain->stop();
+
+    // Wait until a foam is loaded
+    while (!foamLoaded) {
+      foamLoaded = loader->isFoamLoaded();
+      loader->load();
+      bowlGrabber->update();
+      driveTrain->stop();
+
+      if (millis() - startTime >=  beginTime) return;
+    }
+
+    loader->stop();
+
+    // Drive backward slightely
+    driveTrain->arcadeDrive(-1, 0);
+    delay(1000);
+    driveTrain->stop();
+
+    state = STOP;
+  } else if (state == PICKUP_BOWL) {
+    bowlGrabber->closeGrabber();
+    bowlGrabber->raise();
+  } else if (state == STOP) {
+    driveTrain->stop();
+    bowlGrabber->update();
+    loader->stop();
+  }
+
+  /*
   // Drive left if the left sensor is triggered,
   // drive right if the right sensor is triggered,
   // and drive straight if neither are triggered
   if (lineFollowStatus == DETECT_BOTH) {
     driveTrain->arcadeDrive(0, 0);
   } else if (lineFollowStatus == DETECT_LEFT) {
-    driveTrain->arcadeDrive(autoDriveSpeed, 1);
+    driveTrain->arcadeDrive(1, 1);
 
     delay(25);
   } else if (lineFollowStatus == DETECT_RIGHT) {
-    driveTrain->arcadeDrive(autoDriveSpeed, -1);
+    driveTrain->arcadeDrive(1, -1);
 
     delay(25);
   } else if (lineFollowStatus == DETECT_NONE) {
-    driveTrain->arcadeDrive(autoDriveSpeed, 0);
+    driveTrain->arcadeDrive(1, 0);
   }
+  */
 }
 
 void teleopFunction() {
@@ -105,8 +180,10 @@ void teleopFunction() {
     loader->load();
 
     delay(2000);
-  } else if (controller->getButton(BTN_R2)){
+  } else if (controller->getButton(BTN_R2)) {
     loader->load();
+  } else if (controller->getButton(BTN_L2)) {
+    loader->unload();
   } else {
     loader->stop();
   }
@@ -126,7 +203,7 @@ void teleopFunction() {
  */
 void autonomous(volatile unsigned long time) {
   // Wait to start autonomous loop until the start button is pressed
-  while (controller->getButton(BTN_START) == 1) {
+  while (!controller->getButton(BTN_START)) {
     Serial.println("waiting for start");
     controller->update();
     delay(20);
@@ -136,12 +213,12 @@ void autonomous(volatile unsigned long time) {
   time = time * 1000;
 
   // Loops until autonomous has been running for the assigned time, or the select button is pressed
-  while ((millis() - startTime <= time) && (controller->getButton(BTN_SELECT))) {
+  while ((millis() - startTime <= time) && (!controller->getButton(BTN_SELECT))) {
     // Update controller
     controller->update();
 
     // Run autonomous code
-    autonomousFunction();
+    autonomousFunction(startTime, time);
 
     // Delay for DFW and servo safety
     delay(20);
@@ -157,8 +234,8 @@ void teleop(unsigned long time) {
   time = time * 1000;
 
   // Loops until teleop has been running for the assigned time
-  //while (millis() - startTime <= time) {
-  while (true) {
+  while (millis() - startTime <= time) {
+  //while (true) {
     // Update controller
     controller->update();
 

@@ -6,7 +6,7 @@
  */
 BowlGrabber::BowlGrabber(int motorPin, int grabberPin) {
   motor = new Motor(motorPin, false);
-  grabberServo.attach(grabberPin, 1000, 2000);
+  grabberServo.attach(grabberPin, 750, 2250);
 }
 
 /* update - Updates the Bowl Grabber's sensors and executes PID control
@@ -21,9 +21,9 @@ void BowlGrabber::update() {
 
     speed = constrain(speed, -1, 1);
 
-    Serial.print("Error: " ); Serial.print(error);
+    /*Serial.print("Error: " ); Serial.print(error);
     Serial.print("Angle: "); Serial.print(currentAngle);
-    Serial.print(" | Speed: "); Serial.println(speed);
+    Serial.print(" | Speed: "); Serial.println(speed);*/
 
     writeToMotor(speed);
   }

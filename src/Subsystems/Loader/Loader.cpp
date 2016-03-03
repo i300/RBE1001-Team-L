@@ -4,8 +4,18 @@
 
  *loaderPin- PWM for a loader pin
  */
-Loader::Loader(int loaderPin){
+Loader::Loader(int8 loaderPin, int8 foamSwitchPin){
   motor = new Motor(loaderPin, false);
+
+  switchPin = foamSwitchPin;
+}
+
+/* isFoamLoaded - Checks if a FOAM is loaded
+ *
+ */
+bool16 Loader::isFoamLoaded() {
+  // Switch is LOW when closed
+  return digitalRead(switchPin) == LOW;
 }
 
 /* load- moves a foam through the loader assembly

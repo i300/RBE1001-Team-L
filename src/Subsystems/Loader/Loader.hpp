@@ -9,8 +9,12 @@
 class Loader {
   Motor *motor;
 
+  int8 switchPin;
+
 public:
-  Loader(int loaderPin);
+  Loader(int8 loaderPin, int8 foamSwitchPin);
+
+  bool16 isFoamLoaded();
 
   void load();
   void unload();
