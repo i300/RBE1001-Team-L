@@ -29,7 +29,7 @@ protected:
 public:
   BowlGrabber(int motorPin, int grabberPin);
 
-  const int16 upAngle = 880;
+  const int16 upAngle = 850;
   const int16 downAngle = 950;
 
   void update();

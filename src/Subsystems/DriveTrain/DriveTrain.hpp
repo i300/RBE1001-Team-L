@@ -1,7 +1,6 @@
 #include "Arduino.h"
 #include "../../Motor/Motor.hpp"
 #include "../../Utilities.h"
-#include <Servo.h>
 
 #ifndef DRIVETRAIN_H
 #define DRIVETRAIN_H

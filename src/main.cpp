@@ -7,6 +7,7 @@
 #include "Subsystems/DriveTrain/DriveTrain.hpp"
 #include "Subsystems/BowlGrabber/BowlGrabber.hpp"
 #include "Subsystems/Loader/Loader.hpp"
+#include "Subsystems/CubeFlipper/CubeFlipper.hpp"
 #include "Sensors/LineFollower/LineFollower.hpp"
 #include "Sensors/Rangefinder/Rangefinder.hpp"
 
@@ -17,6 +18,7 @@ Controller *controller;
 DriveTrain *driveTrain;
 BowlGrabber *bowlGrabber;
 Loader *loader;
+CubeFlipper *flipper;
 
 // Sensors
 LineFollower *lineFollower;
@@ -48,6 +50,7 @@ void setup() {
   driveTrain = new DriveTrain(PIN_MOTOR_LEFT, PIN_MOTOR_RIGHT, INVERTED_RIGHT);
   bowlGrabber = new BowlGrabber(PIN_MOTOR_BOWLGRABBER, PIN_SERVO_GRABBER);
   loader = new Loader(PIN_MOTOR_FOAMLOADER, PIN_SENSOR_LOADER_LIMIT);
+  flipper = new CubeFlipper(PIN_MOTOR_CUBEFLIPPER);
 
   // Initialize Sensors
   lineFollower = new LineFollower(PIN_SENSOR_LINEFOLLOWER_LEFT, PIN_SENSOR_LINEFOLLOWER_RIGHT);
@@ -146,14 +149,12 @@ void teleopFunction() {
   driveTrain->arcadeDrive(controller->getY(JS_LEFT), controller->getX(JS_RIGHT));
   bowlGrabber->update();
 
-  if (!bowlGrabber->getPIDEnabled()) {
-    if (controller->getButton(BTN_UP)) {
-      bowlGrabber->up(1.0);
-    } else if (controller->getButton(BTN_DOWN)) {
-      bowlGrabber->down(1.0);
-    } else {
-      bowlGrabber->stop();
-    }
+  if (controller->getButton(BTN_UP)) {
+    flipper->up();
+  } else if (controller->getButton(BTN_DOWN)) {
+    flipper->down();
+  } else {
+    flipper->stop();
   }
 
   if (controller->getButton(BTN_L1)) {
@@ -253,7 +254,7 @@ void teleop(unsigned long time) {
 
 
 void loop() {
-  //autonomous(20); // Run autonomous for 20 seconds
+  autonomous(20); // Run autonomous for 20 seconds
 
   teleop(180);  // Run teleop for 20 seconds
 }

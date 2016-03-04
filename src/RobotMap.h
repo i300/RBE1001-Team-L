@@ -7,6 +7,7 @@ static const int8 PIN_MOTOR_LEFT = 5;
 static const int8 PIN_MOTOR_RIGHT = 4;
 static const int8 PIN_MOTOR_BOWLGRABBER = 6;
 static const int8 PIN_MOTOR_FOAMLOADER = 8;
+static const int8 PIN_MOTOR_CUBEFLIPPER = 10;
 
 static const int8 PIN_SENSOR_RANGEFINDER = A4;
 static const int8 PIN_SENSOR_ARM_POT = A8;
